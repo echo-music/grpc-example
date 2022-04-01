@@ -21,8 +21,7 @@ package main
 
 import (
 	"context"
-	"flag"
-	"fmt"
+	"github.com/grpc-example/etcd/pkg/register"
 	"github.com/grpc-example/protos"
 	"log"
 	"net"
@@ -30,9 +29,17 @@ import (
 	"google.golang.org/grpc"
 )
 
-var (
-	port = flag.Int("port", 50051, "The server port")
+const (
+	// Address 监听地址
+	Address string = "localhost:8000"
+	// Network 网络通信协议
+	Network string = "tcp"
+	// SerName 服务名称
+	SerName string = "simple_grpc"
 )
+
+// EtcdEndpoints etcd地址
+var EtcdEndpoints = []string{"localhost:2379"}
 
 // server is used to implement helloworld.GreeterServer.
 type server struct {
@@ -46,14 +53,21 @@ func (s *server) SayHello(ctx context.Context, in *protos.HelloRequest) (*protos
 }
 
 func main() {
-	flag.Parse()
-	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", *port))
+	lis, err := net.Listen(Network, Address)
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
 	s := grpc.NewServer()
 	protos.RegisterGreeterServer(s, &server{})
 	log.Printf("server listening at %v", lis.Addr())
+
+	//把服务注册到etcd
+	ser, err := register.NewServiceRegister(EtcdEndpoints, SerName, Address, 5)
+	if err != nil {
+		log.Fatalf("register service err: %v", err)
+	}
+	defer ser.Close()
+
 	if err := s.Serve(lis); err != nil {
 		log.Fatalf("failed to serve: %v", err)
 	}
