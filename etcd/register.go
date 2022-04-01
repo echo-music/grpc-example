@@ -1,4 +1,4 @@
-package register
+package etcd
 
 import (
 	"context"
@@ -27,10 +27,16 @@ func NewServiceRegister(endpoints []string, serName, addr string, lease int64) (
 	if err != nil {
 		log.Fatal(err)
 	}
+	timeoutCtx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+	defer cancel()
+	_, err = cli.Status(timeoutCtx, endpoints[0])
+	if err != nil {
+		panic(err)
+	}
 
 	ser := &ServiceRegister{
 		cli: cli,
-		key: "/" + serName + "/" + addr,
+		key: "/" + schema + "/" + serName + "/" + addr,
 		val: addr,
 	}
 

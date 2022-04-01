@@ -1,4 +1,4 @@
-package main
+package etcd
 
 import (
 	"context"
@@ -28,6 +28,13 @@ func NewServiceDiscovery(endpoints []string) resolver.Builder {
 	})
 	if err != nil {
 		log.Fatal(err)
+	}
+
+	timeoutCtx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+	defer cancel()
+	_, err = cli.Status(timeoutCtx, endpoints[0])
+	if err != nil {
+		panic(err)
 	}
 
 	return &ServiceDiscovery{
