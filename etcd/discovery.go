@@ -2,6 +2,7 @@ package etcd
 
 import (
 	"context"
+	"fmt"
 	"go.etcd.io/etcd/api/v3/mvccpb"
 	"go.etcd.io/etcd/client/v3"
 	"google.golang.org/grpc/resolver"
@@ -48,6 +49,7 @@ func (s *ServiceDiscovery) Build(target resolver.Target, cc resolver.ClientConn,
 	s.cc = cc
 	s.serverList = make(map[string]resolver.Address)
 	prefix := "/" + target.Scheme + "/" + target.Endpoint + "/"
+	fmt.Println("prefix", prefix)
 	//根据前缀获取现有的key
 	resp, err := s.cli.Get(context.Background(), prefix, clientv3.WithPrefix())
 	if err != nil {
