@@ -13,10 +13,6 @@ import (
 	"time"
 )
 
-const (
-	defaultName = "world"
-)
-
 var (
 	// EtcdEndpoints etcd地址
 	EtcdEndpoints = []string{"localhost:2379"}
