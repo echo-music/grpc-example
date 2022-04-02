@@ -35,7 +35,7 @@ const (
 	// Network 网络通信协议
 	Network string = "tcp"
 	// SerName 服务名称
-	SerName string = "simple_grpc"
+	SerName string = "psp-scale"
 )
 
 // EtcdEndpoints etcd地址

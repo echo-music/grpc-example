@@ -2,11 +2,13 @@ package etcd
 
 import (
 	"context"
+	"fmt"
 	"go.etcd.io/etcd/api/v3/mvccpb"
 	"go.etcd.io/etcd/client/v3"
 	"google.golang.org/grpc/resolver"
 	"log"
 	"sync"
+	"sync/atomic"
 	"time"
 )
 
@@ -18,7 +20,13 @@ type ServiceDiscovery struct {
 	cc         resolver.ClientConn
 	serverList map[string]resolver.Address //服务列表
 	lock       sync.Mutex
+	value      atomic.Value
 }
+type AllServiceList struct {
+	services map[string]resolver.Address
+}
+
+var serverList = make(map[string]resolver.Address) //服务列表
 
 //NewServiceDiscovery  新建发现服务
 func NewServiceDiscovery(endpoints []string) resolver.Builder {
@@ -37,9 +45,14 @@ func NewServiceDiscovery(endpoints []string) resolver.Builder {
 		panic(err)
 	}
 
-	return &ServiceDiscovery{
+	r := &ServiceDiscovery{
 		cli: cli,
 	}
+	allServiceList := &AllServiceList{
+		services: make(map[string]resolver.Address),
+	}
+	r.value.Store(allServiceList)
+	return r
 }
 
 //Build 为给定目标创建一个新的`resolver`，当调用`grpc.Dial()`时执行
@@ -53,6 +66,7 @@ func (s *ServiceDiscovery) Build(target resolver.Target, cc resolver.ClientConn,
 	if err != nil {
 		return nil, err
 	}
+	fmt.Println("从etcd拉取所有数据")
 
 	for _, ev := range resp.Kvs {
 		s.SetServiceList(string(ev.Key), string(ev.Value))
@@ -107,6 +121,7 @@ func (s *ServiceDiscovery) watcher(prefix string) {
 func (s *ServiceDiscovery) SetServiceList(key, val string) {
 	s.lock.Lock()
 	defer s.lock.Unlock()
+	fmt.Println(key, "key")
 	s.serverList[key] = resolver.Address{Addr: val}
 	state := resolver.State{
 		Addresses:     s.getServices(),
@@ -134,10 +149,12 @@ func (s *ServiceDiscovery) DelServiceList(key string) {
 
 //GetServices 获取服务地址
 func (s *ServiceDiscovery) getServices() []resolver.Address {
+
 	addrs := make([]resolver.Address, 0, len(s.serverList))
 
 	for _, v := range s.serverList {
 		addrs = append(addrs, v)
 	}
+
 	return addrs
 }

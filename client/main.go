@@ -17,7 +17,7 @@ var (
 	// EtcdEndpoints etcd地址
 	EtcdEndpoints = []string{"localhost:2379"}
 	// SerName 服务名称
-	SerName = "simple_grpc"
+	SerName = "psp-scale"
 )
 
 func main() {
