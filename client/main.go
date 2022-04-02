@@ -6,6 +6,8 @@ import (
 	"github.com/grpc-example/etcd"
 	"github.com/grpc-example/protos"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/balancer/roundrobin"
+	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/resolver"
 	"log"
 	"time"
@@ -30,8 +32,8 @@ func main() {
 	// 连接服务器
 	conn, err := grpc.Dial(
 		fmt.Sprintf("%s:///%s", r.Scheme(), SerName),
-		grpc.WithBalancerName("round_robin"),
-		grpc.WithInsecure(),
+		grpc.WithDefaultServiceConfig(fmt.Sprintf(`{"LoadBalancingPolicy": "%s"}`, roundrobin.Name)),
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
 	)
 	if err != nil {
 		log.Fatalf("net.Connect err: %v", err)
