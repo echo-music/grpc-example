@@ -2,7 +2,6 @@ package etcd
 
 import (
 	"context"
-	"fmt"
 	"go.etcd.io/etcd/api/v3/mvccpb"
 	"go.etcd.io/etcd/client/v3"
 	"google.golang.org/grpc/resolver"
@@ -48,8 +47,7 @@ func (s *ServiceDiscovery) Build(target resolver.Target, cc resolver.ClientConn,
 	log.Println("Build")
 	s.cc = cc
 	s.serverList = make(map[string]resolver.Address)
-	prefix := "/" + target.Scheme + "/" + target.Endpoint + "/"
-	fmt.Println("prefix", prefix)
+	prefix := "/" + target.URL.Scheme + target.URL.Path + "/"
 	//根据前缀获取现有的key
 	resp, err := s.cli.Get(context.Background(), prefix, clientv3.WithPrefix())
 	if err != nil {
@@ -59,7 +57,15 @@ func (s *ServiceDiscovery) Build(target resolver.Target, cc resolver.ClientConn,
 	for _, ev := range resp.Kvs {
 		s.SetServiceList(string(ev.Key), string(ev.Value))
 	}
-	s.cc.NewAddress(s.getServices())
+	state := resolver.State{
+		Addresses:     s.getServices(),
+		ServiceConfig: nil,
+		Attributes:    nil,
+	}
+	if err = s.cc.UpdateState(state); err != nil {
+		return nil, err
+	}
+
 	//监视前缀，修改变更的server
 	go s.watcher(prefix)
 	return s, nil
@@ -102,7 +108,12 @@ func (s *ServiceDiscovery) SetServiceList(key, val string) {
 	s.lock.Lock()
 	defer s.lock.Unlock()
 	s.serverList[key] = resolver.Address{Addr: val}
-	s.cc.NewAddress(s.getServices())
+	state := resolver.State{
+		Addresses:     s.getServices(),
+		ServiceConfig: nil,
+		Attributes:    nil,
+	}
+	s.cc.UpdateState(state)
 	log.Println("put key :", key, "val:", val)
 }
 
@@ -111,7 +122,13 @@ func (s *ServiceDiscovery) DelServiceList(key string) {
 	s.lock.Lock()
 	defer s.lock.Unlock()
 	delete(s.serverList, key)
-	s.cc.NewAddress(s.getServices())
+	state := resolver.State{
+		Addresses:     s.getServices(),
+		ServiceConfig: nil,
+		Attributes:    nil,
+	}
+	s.cc.UpdateState(state)
+
 	log.Println("del key:", key)
 }
 
