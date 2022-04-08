@@ -2,7 +2,6 @@ package main
 
 import (
 	"github.com/grpc-example/helloword"
-	"time"
 )
 
 var (
@@ -12,11 +11,8 @@ var (
 
 func main() {
 
-	for i := 0; i < 10; i++ {
-		helloword.SayHello(i)
-		time.Sleep(1 * time.Second)
+	helloword.SayHello(0)
 
-	}
 	select {}
 
 }

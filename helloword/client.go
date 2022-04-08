@@ -28,14 +28,19 @@ func getConn() *grpc.ClientConn {
 
 func SayHello(i int) {
 	conn := getConn()
+
 	c := NewGreeterClient(conn)
 	//Contact the server and print out its response.
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
-	defer cancel()
-
-	hello, err := c.SayHello(ctx, &HelloRequest{Name: fmt.Sprintf("hello_%d", i)})
-	if err != nil {
-		return
+	//ctx, cancel := context.WithTimeout(context.Background(), time.Second*10000000)
+	//defer cancel()
+	defer conn.Close()
+	for i := 0; i < 1000; i++ {
+		hello, err := c.SayHello(context.Background(), &HelloRequest{Name: fmt.Sprintf("hello_%d", i)})
+		if err != nil {
+			return
+		}
+		fmt.Println(hello)
+		time.Sleep(time.Second * 1)
 	}
-	fmt.Println(hello)
+
 }
