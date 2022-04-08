@@ -22,7 +22,7 @@ package main
 import (
 	"context"
 	"github.com/grpc-example/etcd"
-	"github.com/grpc-example/protos"
+	"github.com/grpc-example/helloword"
 	"log"
 	"net"
 
@@ -43,13 +43,13 @@ var EtcdEndpoints = []string{"localhost:2379"}
 
 // server is used to implement helloworld.GreeterServer.
 type server struct {
-	protos.UnimplementedGreeterServer
+	helloword.UnimplementedGreeterServer
 }
 
 // SayHello implements helloworld.GreeterServer
-func (s *server) SayHello(ctx context.Context, in *protos.HelloRequest) (*protos.HelloReply, error) {
+func (s *server) SayHello(ctx context.Context, in *helloword.HelloRequest) (*helloword.HelloReply, error) {
 	log.Printf("Received: %v", in.GetName())
-	return &protos.HelloReply{Message: "Hello " + in.GetName()}, nil
+	return &helloword.HelloReply{Message: "Hello " + in.GetName()}, nil
 }
 
 func main() {
@@ -58,7 +58,7 @@ func main() {
 		log.Fatalf("failed to listen: %v", err)
 	}
 	s := grpc.NewServer()
-	protos.RegisterGreeterServer(s, &server{})
+	helloword.RegisterGreeterServer(s, &server{})
 	log.Printf("server listening at %v", lis.Addr())
 
 	//把服务注册到etcd

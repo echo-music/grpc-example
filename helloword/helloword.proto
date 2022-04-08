@@ -15,7 +15,7 @@
 syntax = "proto3";
 
 // option go_package = "google.golang.org/grpc/examples/helloworld/helloworld";
-option go_package = "grpc-example/protos;protos";
+option go_package = "grpc-example/helloword;helloword";
 
 
 package protos;

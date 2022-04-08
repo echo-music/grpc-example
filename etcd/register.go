@@ -2,6 +2,7 @@ package etcd
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"time"
 
@@ -20,12 +21,18 @@ type ServiceRegister struct {
 
 //NewServiceRegister 新建注册服务
 func NewServiceRegister(endpoints []string, serName, addr string, lease int64) (*ServiceRegister, error) {
-	cli, err := clientv3.New(clientv3.Config{
-		Endpoints:   endpoints,
-		DialTimeout: 5 * time.Second,
-	})
-	if err != nil {
-		log.Fatal(err)
+
+	var err error
+	if cli == nil {
+		fmt.Println("new etcd client3")
+		cli, err = clientv3.New(clientv3.Config{
+			Endpoints:   endpoints,
+			DialTimeout: 5 * time.Second,
+		})
+		if err != nil {
+			log.Fatal(err)
+		}
+
 	}
 	timeoutCtx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
 	defer cancel()
@@ -41,7 +48,7 @@ func NewServiceRegister(endpoints []string, serName, addr string, lease int64) (
 	}
 
 	//申请租约设置时间keepalive
-	if err := ser.putKeyWithLease(lease); err != nil {
+	if err = ser.putKeyWithLease(lease); err != nil {
 		return nil, err
 	}
 

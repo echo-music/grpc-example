@@ -8,11 +8,16 @@ import (
 	"google.golang.org/grpc/resolver"
 	"log"
 	"sync"
-	"sync/atomic"
 	"time"
 )
 
 const schema = "grpclb"
+
+var (
+	Resover       resolver.Builder
+	cli           *clientv3.Client //etcd client
+	EtcdEndpoints = []string{"localhost:2379"}
+)
 
 //ServiceDiscovery 服务发现
 type ServiceDiscovery struct {
@@ -20,17 +25,21 @@ type ServiceDiscovery struct {
 	cc         resolver.ClientConn
 	serverList map[string]resolver.Address //服务列表
 	lock       sync.Mutex
-	value      atomic.Value
-}
-type AllServiceList struct {
-	services map[string]resolver.Address
 }
 
 var serverList = make(map[string]resolver.Address) //服务列表
 
 //NewServiceDiscovery  新建发现服务
 func NewServiceDiscovery(endpoints []string) resolver.Builder {
-	cli, err := clientv3.New(clientv3.Config{
+
+	if cli != nil {
+		return &ServiceDiscovery{
+			cli: cli,
+		}
+	}
+	fmt.Println("new etcd client3")
+	var err error
+	cli, err = clientv3.New(clientv3.Config{
 		Endpoints:   endpoints,
 		DialTimeout: 5 * time.Second,
 	})
@@ -45,14 +54,7 @@ func NewServiceDiscovery(endpoints []string) resolver.Builder {
 		panic(err)
 	}
 
-	r := &ServiceDiscovery{
-		cli: cli,
-	}
-	allServiceList := &AllServiceList{
-		services: make(map[string]resolver.Address),
-	}
-	r.value.Store(allServiceList)
-	return r
+	return &ServiceDiscovery{cli: cli}
 }
 
 //Build 为给定目标创建一个新的`resolver`，当调用`grpc.Dial()`时执行
@@ -151,10 +153,14 @@ func (s *ServiceDiscovery) DelServiceList(key string) {
 func (s *ServiceDiscovery) getServices() []resolver.Address {
 
 	addrs := make([]resolver.Address, 0, len(s.serverList))
-
 	for _, v := range s.serverList {
 		addrs = append(addrs, v)
 	}
 
 	return addrs
+}
+
+func init() {
+	Resover = NewServiceDiscovery(EtcdEndpoints)
+	resolver.Register(Resover)
 }
