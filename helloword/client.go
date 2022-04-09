@@ -32,6 +32,7 @@ func initConn() {
 	var err error
 	r := etcd.NewServiceDiscovery()
 	resolver.Register(r)
+
 	conn, err = grpc.Dial(
 		fmt.Sprintf("%s:///%s", r.Scheme(), SerName),
 		grpc.WithDefaultServiceConfig(fmt.Sprintf(`{"LoadBalancingPolicy": "%s"}`, roundrobin.Name)),

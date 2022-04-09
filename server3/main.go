@@ -35,7 +35,7 @@ const (
 	// Network 网络通信协议
 	Network string = "tcp"
 	// SerName 服务名称
-	SerName string = "psp-report"
+	SerName string = "psp-scale"
 )
 
 // server is used to implement helloworld.GreeterServer.
