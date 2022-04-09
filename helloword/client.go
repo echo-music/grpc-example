@@ -20,8 +20,10 @@ type Client struct {
 
 func NewClient() *Client {
 	if conn == nil {
+		fmt.Println("初始化连接")
 		initConn()
 	}
+
 	c := NewGreeterClient(conn)
 	return &Client{
 		gclent: c,
@@ -46,5 +48,6 @@ func initConn() {
 }
 
 func (c *Client) SayHello(ctx context.Context, in *HelloRequest) (*HelloReply, error) {
+
 	return c.gclent.SayHello(ctx, in)
 }
