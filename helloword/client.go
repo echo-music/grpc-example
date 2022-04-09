@@ -9,12 +9,27 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 )
 
-var SerName = "psp-scale"
-var Conn *grpc.ClientConn
+const SerName = "psp-scale"
 
-func init() {
+var conn *grpc.ClientConn
+
+type Client struct {
+	gclent GreeterClient
+}
+
+func NewClient() *Client {
+	if conn == nil {
+		initConn()
+	}
+	c := NewGreeterClient(conn)
+	return &Client{
+		gclent: c,
+	}
+}
+
+func initConn() {
 	var err error
-	Conn, err = grpc.Dial(
+	conn, err = grpc.Dial(
 		fmt.Sprintf("%s:///%s", etcd.Resover.Scheme(), SerName),
 		grpc.WithDefaultServiceConfig(fmt.Sprintf(`{"LoadBalancingPolicy": "%s"}`, roundrobin.Name)),
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
@@ -25,16 +40,6 @@ func init() {
 
 }
 
-func SayHello(i int) {
-
-	c := NewGreeterClient(Conn)
-	//Contact the server and print out its response.
-	//ctx, cancel := context.WithTimeout(context.Background(), time.Second*10000000)
-	//defer cancel()
-
-	hello, err := c.SayHello(context.Background(), &HelloRequest{Name: fmt.Sprintf("hello_%d", i)})
-	if err != nil {
-		return
-	}
-	fmt.Println(hello, "i=", i)
+func (c *Client) SayHello(ctx context.Context, in *HelloRequest) (*HelloReply, error) {
+	return c.gclent.SayHello(ctx, in)
 }
