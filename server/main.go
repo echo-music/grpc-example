@@ -38,9 +38,6 @@ const (
 	SerName string = "psp-scale"
 )
 
-// EtcdEndpoints etcd地址
-var EtcdEndpoints = []string{"localhost:2379"}
-
 // server is used to implement helloworld.GreeterServer.
 type server struct {
 	helloword.UnimplementedGreeterServer
@@ -62,7 +59,7 @@ func main() {
 	log.Printf("server listening at %v", lis.Addr())
 
 	//把服务注册到etcd
-	ser, err := etcd.NewServiceRegister(EtcdEndpoints, SerName, Address, 5)
+	ser, err := etcd.NewServiceRegister(SerName, Address, 5)
 	if err != nil {
 		log.Fatalf("register service err: %v", err)
 	}

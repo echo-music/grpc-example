@@ -7,6 +7,7 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/balancer/roundrobin"
 	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/grpc/resolver"
 )
 
 const SerName = "psp-scale"
@@ -29,11 +30,14 @@ func NewClient() *Client {
 
 func initConn() {
 	var err error
+	r := etcd.NewServiceDiscovery()
+	resolver.Register(r)
 	conn, err = grpc.Dial(
-		fmt.Sprintf("%s:///%s", etcd.Resover.Scheme(), SerName),
+		fmt.Sprintf("%s:///%s", r.Scheme(), SerName),
 		grpc.WithDefaultServiceConfig(fmt.Sprintf(`{"LoadBalancingPolicy": "%s"}`, roundrobin.Name)),
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 	)
+
 	if err != nil {
 		panic(err)
 	}

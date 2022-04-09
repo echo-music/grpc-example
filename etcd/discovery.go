@@ -8,16 +8,9 @@ import (
 	"google.golang.org/grpc/resolver"
 	"log"
 	"sync"
-	"time"
 )
 
 const schema = "grpclb"
-
-var (
-	Resover       resolver.Builder
-	cli           *clientv3.Client //etcd client
-	EtcdEndpoints = []string{"localhost:2379"}
-)
 
 //ServiceDiscovery 服务发现
 type ServiceDiscovery struct {
@@ -30,30 +23,7 @@ type ServiceDiscovery struct {
 var serverList = make(map[string]resolver.Address) //服务列表
 
 //NewServiceDiscovery  新建发现服务
-func NewServiceDiscovery(endpoints []string) resolver.Builder {
-
-	if cli != nil {
-		return &ServiceDiscovery{
-			cli: cli,
-		}
-	}
-	fmt.Println("new etcd client3")
-	var err error
-	cli, err = clientv3.New(clientv3.Config{
-		Endpoints:   endpoints,
-		DialTimeout: 5 * time.Second,
-	})
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	timeoutCtx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
-	defer cancel()
-	_, err = cli.Status(timeoutCtx, endpoints[0])
-	if err != nil {
-		panic(err)
-	}
-
+func NewServiceDiscovery() resolver.Builder {
 	return &ServiceDiscovery{cli: cli}
 }
 
@@ -158,11 +128,4 @@ func (s *ServiceDiscovery) getServices() []resolver.Address {
 	}
 
 	return addrs
-}
-
-func init() {
-	if Resover == nil {
-		Resover = NewServiceDiscovery(EtcdEndpoints)
-	}
-	resolver.Register(Resover)
 }

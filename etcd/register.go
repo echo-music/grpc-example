@@ -2,11 +2,8 @@ package etcd
 
 import (
 	"context"
-	"fmt"
-	"log"
-	"time"
-
 	"go.etcd.io/etcd/client/v3"
+	"log"
 )
 
 //ServiceRegister 创建租约注册服务
@@ -20,27 +17,9 @@ type ServiceRegister struct {
 }
 
 //NewServiceRegister 新建注册服务
-func NewServiceRegister(endpoints []string, serName, addr string, lease int64) (*ServiceRegister, error) {
+func NewServiceRegister(serName, addr string, lease int64) (*ServiceRegister, error) {
 
 	var err error
-	if cli == nil {
-		fmt.Println("new etcd client3")
-		cli, err = clientv3.New(clientv3.Config{
-			Endpoints:   endpoints,
-			DialTimeout: 5 * time.Second,
-		})
-		if err != nil {
-			log.Fatal(err)
-		}
-
-	}
-	timeoutCtx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
-	defer cancel()
-	_, err = cli.Status(timeoutCtx, endpoints[0])
-	if err != nil {
-		panic(err)
-	}
-
 	ser := &ServiceRegister{
 		cli: cli,
 		key: "/" + schema + "/" + serName + "/" + addr,
