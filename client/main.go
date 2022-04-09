@@ -1,8 +1,6 @@
 package main
 
-import (
-	"github.com/grpc-example/helloword"
-)
+import "github.com/grpc-example/helloword"
 
 var (
 	// SerName 服务名称
@@ -11,7 +9,9 @@ var (
 
 func main() {
 
-	helloword.SayHello(0)
+	for i := 0; i < 100; i++ {
+		helloword.SayHello(i)
+	}
 
 	select {}
 

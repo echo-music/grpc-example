@@ -161,6 +161,8 @@ func (s *ServiceDiscovery) getServices() []resolver.Address {
 }
 
 func init() {
-	Resover = NewServiceDiscovery(EtcdEndpoints)
+	if Resover == nil {
+		Resover = NewServiceDiscovery(EtcdEndpoints)
+	}
 	resolver.Register(Resover)
 }
