@@ -12,42 +12,35 @@ import (
 
 const SerName = "psp-scale"
 
-var conn *grpc.ClientConn
+var client *Client
 
 type Client struct {
-	gclent GreeterClient
+	cli GreeterClient
 }
 
+// NewClient 创建grpc客户端
 func NewClient() *Client {
-	if conn == nil {
-		fmt.Println("初始化连接")
-		initConn()
+	if client == nil {
+		r := etcd.NewServiceDiscovery()
+		resolver.Register(r)
+		conn, err := grpc.Dial(
+			fmt.Sprintf("%s:///%s", r.Scheme(), SerName),
+			grpc.WithDefaultServiceConfig(fmt.Sprintf(`{"LoadBalancingPolicy": "%s"}`, roundrobin.Name)),
+			grpc.WithTransportCredentials(insecure.NewCredentials()),
+		)
+		if err != nil {
+			panic(err)
+		}
+		c := NewGreeterClient(conn)
+		client = &Client{
+			cli: c,
+		}
 	}
 
-	c := NewGreeterClient(conn)
-	return &Client{
-		gclent: c,
-	}
+	return client
 }
 
-func initConn() {
-	var err error
-	r := etcd.NewServiceDiscovery()
-	resolver.Register(r)
-
-	conn, err = grpc.Dial(
-		fmt.Sprintf("%s:///%s", r.Scheme(), SerName),
-		grpc.WithDefaultServiceConfig(fmt.Sprintf(`{"LoadBalancingPolicy": "%s"}`, roundrobin.Name)),
-		grpc.WithTransportCredentials(insecure.NewCredentials()),
-	)
-
-	if err != nil {
-		panic(err)
-	}
-
-}
-
+// SayHello 调用方法
 func (c *Client) SayHello(ctx context.Context, in *HelloRequest) (*HelloReply, error) {
-
-	return c.gclent.SayHello(ctx, in)
+	return c.cli.SayHello(ctx, in)
 }
