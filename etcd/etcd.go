@@ -9,14 +9,14 @@ import (
 
 var (
 	cli           *clientv3.Client //etcd client
-	EtcdEndpoints = []string{"localhost:2379"}
+	etcdEndpoints = []string{"localhost:2379"}
 )
 
 // init  初始化etcd客户端
 func init() {
 	var err error
 	cli, err = clientv3.New(clientv3.Config{
-		Endpoints:   EtcdEndpoints,
+		Endpoints:   etcdEndpoints,
 		DialTimeout: 5 * time.Second,
 	})
 	if err != nil {
@@ -25,7 +25,7 @@ func init() {
 
 	timeoutCtx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
 	defer cancel()
-	_, err = cli.Status(timeoutCtx, EtcdEndpoints[0])
+	_, err = cli.Status(timeoutCtx, etcdEndpoints[0])
 	if err != nil {
 		panic(err)
 	}
