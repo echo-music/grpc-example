@@ -3,7 +3,6 @@ module github.com/grpc-example
 go 1.17
 
 require (
-	github.com/processout/grpc-go-pool v1.2.1
 	go.etcd.io/etcd/api/v3 v3.5.2
 	go.etcd.io/etcd/client/v3 v3.5.2
 	google.golang.org/grpc v1.45.0
@@ -23,4 +22,5 @@ require (
 	golang.org/x/sys v0.0.0-20220330033206-e17cdc41300f // indirect
 	golang.org/x/text v0.3.7 // indirect
 	google.golang.org/genproto v0.0.0-20220329172620-7be39ac1afc7 // indirect
+	google.golang.org/grpc/cmd/protoc-gen-go-grpc v1.2.0 // indirect
 )
