@@ -12,10 +12,14 @@ func IndexHandler(w http.ResponseWriter, r *http.Request) {
 
 	client := helloword.NewClient()
 	reply, _ := client.SayHello(context.Background(), &helloword.HelloRequest{
-		Name:   "",
-		Gender: "",
+		Name:   "张三",
+		Gender: "女",
 	})
-	fmt.Fprintln(w, reply)
+
+	pingReply, _ := client.Ping(context.Background(), &helloword.PingRequest{})
+
+	msg := fmt.Sprintf("%s,%s", reply.Message, pingReply.Message)
+	fmt.Fprintln(w, msg)
 }
 
 func main() {

@@ -20,6 +20,7 @@ type Client struct {
 
 // NewClient 创建grpc客户端
 func NewClient() *Client {
+
 	if client == nil {
 		r := etcd.NewServiceDiscovery()
 		resolver.Register(r)
@@ -43,4 +44,7 @@ func NewClient() *Client {
 // SayHello 调用方法
 func (c *Client) SayHello(ctx context.Context, in *HelloRequest) (*HelloReply, error) {
 	return c.cli.SayHello(ctx, in)
+}
+func (c *Client) Ping(ctx context.Context, in *PingRequest) (*PingReply, error) {
+	return c.cli.Ping(ctx, in)
 }

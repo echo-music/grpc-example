@@ -49,6 +49,11 @@ func (s *server) SayHello(ctx context.Context, in *helloword.HelloRequest) (*hel
 	return &helloword.HelloReply{Message: "Hello " + in.GetName() + ":8000"}, nil
 }
 
+func (s *server) Ping(ctx context.Context, in *helloword.PingRequest) (*helloword.PingReply, error) {
+	log.Printf("Received port=: %v", "8000")
+	return &helloword.PingReply{Message: "Hello Client My port is " + ":8000"}, nil
+}
+
 func main() {
 	lis, err := net.Listen(Network, Address)
 	if err != nil {
