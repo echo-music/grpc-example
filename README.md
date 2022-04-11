@@ -1,7 +1,7 @@
 # grpc-example
 grpc,grpc-etcd,grpc-register,grpc-discovery
 
-##说明
+## 说明
  支持服务注册和服务发现的小demo,仅供学习使用。
 ### 1、安装protobuf编辑器(mac下安装)
 >  brew install protobuf
@@ -63,3 +63,10 @@ message PingReply{
 > protoc --go_out=. --go_opt=paths=source_relative \
 --go-grpc_out=. --go-grpc_opt=paths=source_relative \
 ./helloword.proto
+
+### 参考资料
+```
+  https://github.com/Bingjian-Zhu/go-grpc-example 
+  https://github.com/Bingjian-Zhu/etcd-example
+  
+```
